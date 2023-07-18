@@ -1,6 +1,6 @@
-# CovidTracker Component
+# Covid Connect
 
-The `CovidTracker` component is a React component that displays global COVID-19 statistics. It fetches data from the [disease.sh](https://disease.sh/) API and provides a search functionality to view statistics for specific countries.
+The `Covid Connect` is an MVP, for now it only have the `CovidTracker` component is a React component that displays global COVID-19 statistics. It fetches data from the [disease.sh](https://disease.sh/) API and provides a search functionality to view statistics for specific countries.
 
 ## Props
 
