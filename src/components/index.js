@@ -8,10 +8,43 @@ import {
   InputBase,
   Typography,
   Alert,
+  styled,
 } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import Charts from "./Charts";
+import { styled as muiStyled } from "@mui/system";
+
+const ResponsiveCard = styled(Card)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  width: "100%",
+  justifyContent: "center",
+  padding: "1rem",
+  [theme.breakpoints.up("sm")]: {
+    width: "520px",
+  },
+  [theme.breakpoints.up("md")]: {
+    width: "720px",
+  },
+  [theme.breakpoints.up("lg")]: {
+    width: "920px",
+  },
+}));
+
+const ResponsiveBox = muiStyled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
+  width: "100%",
+  padding: ".5rem",
+  justifyContent: "space-between",
+  [theme.breakpoints.up("sm")]: {
+    maxWidth: "600px",
+    margin: "0 auto",
+  },
+}));
 
 const CovidTracker = () => {
   const [globalData, setGlobalData] = useState(null);
@@ -111,40 +144,18 @@ const CovidTracker = () => {
         alignItems: "center",
         justifyContent: "flex-start",
         backgroundColor: "#f5f5f5",
-        height: "100vh",
+        minHeight: "100vh",
         width: "100%",
       }}
     >
-      <Card
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          width: "920px",
-          justifyContent: "center",
-          padding: "1rem",
-        }}
-      >
+      <ResponsiveCard>
         <Typography gutterBottom variant="h4">
           Global COVID-19 Statistics
         </Typography>
 
-        <Divider
-          sx={{
-            width: "100%",
-          }}
-        />
+        <Divider />
 
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            width: "100%",
-            padding: ".5rem",
-            justifyContent: "space-between",
-          }}
-        >
+        <ResponsiveBox>
           <InputBase
             placeholder="Search by country"
             value={searchTerm}
@@ -177,18 +188,9 @@ const CovidTracker = () => {
               </InputAdornment>
             }
           />
-        </Box>
+        </ResponsiveBox>
 
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            width: "100%",
-            padding: ".5rem",
-            justifyContent: "space-between",
-          }}
-        >
+        <ResponsiveBox>
           {filteredData && (
             <>
               <Typography variant="h6">
@@ -202,7 +204,7 @@ const CovidTracker = () => {
               </Typography>
             </>
           )}
-        </Box>
+        </ResponsiveBox>
 
         <Box
           sx={{
@@ -216,7 +218,7 @@ const CovidTracker = () => {
         >
           <Charts data={formattedData} />
         </Box>
-      </Card>
+      </ResponsiveCard>
     </Box>
   );
 };
