@@ -8,12 +8,15 @@ import {
   InputBase,
   Typography,
   Alert,
+  Tabs,
+  Tab,
   styled,
 } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
-import Charts from "./Charts";
 import { styled as muiStyled } from "@mui/system";
+import HistoricalDataChart from "./HistoricalDataChart";
+import LineChartComponent from "./LineChart";
 
 const ResponsiveCard = styled(Card)(({ theme }) => ({
   display: "flex",
@@ -49,8 +52,12 @@ const ResponsiveBox = muiStyled(Box)(({ theme }) => ({
 const CovidTracker = () => {
   const [globalData, setGlobalData] = useState(null);
   const [filteredData, setFilteredData] = useState(null);
+  const [historicalData, setHistoricalData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
+  const [selectedDataKey, setSelectedDataKey] = useState("cases");
+  const [selectedCountry, setSelectedCountry] = useState("");
 
   const handleOnClickSearch = () => {
     if (!searchTerm) return;
@@ -79,6 +86,48 @@ const CovidTracker = () => {
         setError(true);
       });
   }, []);
+
+  const formatHistoricalData = (data) => {
+    let formattedHistoricalData = [];
+
+    if (data && data.length) {
+      for (let i = 0; i < data.length; i++) {
+        const { timeline, country } = data[i];
+
+        if (timeline) {
+          const { cases, deaths, recovered } = timeline;
+          for (let date in cases) {
+            formattedHistoricalData.push({
+              country,
+              date,
+              cases: cases[date],
+              deaths: deaths[date],
+              recovered: recovered[date],
+            });
+          }
+        }
+      }
+    }
+
+    return formattedHistoricalData;
+  };
+
+  useEffect(() => {
+    const apiUrl = `https://disease.sh/v3/covid-19/historical/${searchTerm}?lastdays=30`;
+
+    axios
+      .get(apiUrl)
+      .then((response) => {
+        const formattedData = formatHistoricalData(response.data);
+        setHistoricalData(formattedData);
+        setError(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching data: ", error);
+        setHistoricalData(null);
+        setError(true);
+      });
+  }, [searchTerm]);
 
   useEffect(() => {
     if (!searchTerm) {
@@ -155,69 +204,92 @@ const CovidTracker = () => {
 
         <Divider />
 
-        <ResponsiveBox>
-          <InputBase
-            placeholder="Search by country"
-            value={searchTerm}
-            onChange={handleSearch}
-            sx={{
-              backgroundColor: "#f5f5f5",
-              borderRadius: "4px",
-              padding: "0.5rem",
-              width: "100%",
-              "&:hover": {
-                backgroundColor: "#e0e0e0",
-              },
-              "& .MuiInputBase-input": {
-                fontSize: "1rem",
-                fontWeight: "500",
-              },
-              "& .MuiInputAdornment-root": {
-                marginLeft: "0.5rem",
-              },
-            }}
-            endAdornment={
-              <InputAdornment
-                onClick={handleOnClickSearch}
-                sx={{
-                  cursor: "pointer",
-                }}
-                position="end"
-              >
-                <SearchIcon />
-              </InputAdornment>
-            }
-          />
-        </ResponsiveBox>
-
-        <ResponsiveBox>
-          {filteredData && (
-            <>
-              <Typography variant="h6">
-                Total Cases: {filteredData.cases.toLocaleString()}
-              </Typography>
-              <Typography variant="h6">
-                Total Deaths: {filteredData.deaths.toLocaleString()}
-              </Typography>
-              <Typography variant="h6">
-                Total Recovered: {filteredData.recovered.toLocaleString()}
-              </Typography>
-            </>
-          )}
-        </ResponsiveBox>
-
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            marginTop: "1rem",
-            width: "100%",
-            justifyContent: "center",
-          }}
+        <Tabs
+          value={tabValue}
+          onChange={(event, newValue) => setTabValue(newValue)}
         >
-          <Charts data={formattedData} />
-        </Box>
+          <Tab label="Current Statistics" />
+          <Tab label="Historical Data" />
+        </Tabs>
+
+        {tabValue === 0 && (
+          <ResponsiveBox>
+            <InputBase
+              placeholder="Search by country"
+              value={searchTerm}
+              onChange={handleSearch}
+              sx={{
+                backgroundColor: "#f5f5f5",
+                borderRadius: "4px",
+                padding: "0.5rem",
+                width: "100%",
+                "&:hover": {
+                  backgroundColor: "#e0e0e0",
+                },
+                "& .MuiInputBase-input": {
+                  fontSize: "1rem",
+                  fontWeight: "500",
+                },
+                "& .MuiInputAdornment-root": {
+                  marginLeft: "0.5rem",
+                },
+              }}
+              endAdornment={
+                <InputAdornment
+                  onClick={handleOnClickSearch}
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                  position="end"
+                >
+                  <SearchIcon />
+                </InputAdornment>
+              }
+            />
+          </ResponsiveBox>
+        )}
+
+        {tabValue === 0 && (
+          <ResponsiveBox>
+            {filteredData && (
+              <>
+                <Typography variant="h6">
+                  Total Cases: {filteredData.cases.toLocaleString()}
+                </Typography>
+                <Typography variant="h6">
+                  Total Deaths: {filteredData.deaths.toLocaleString()}
+                </Typography>
+                <Typography variant="h6">
+                  Total Recovered: {filteredData.recovered.toLocaleString()}
+                </Typography>
+              </>
+            )}
+          </ResponsiveBox>
+        )}
+
+        {tabValue === 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: "1rem",
+              width: "100%",
+              justifyContent: "center",
+            }}
+          >
+            <LineChartComponent data={formattedData} />
+          </Box>
+        )}
+        {tabValue === 1 && historicalData && (
+          <HistoricalDataChart
+            data={historicalData}
+            selectedDataKey={selectedDataKey}
+            setSelectedDataKey={setSelectedDataKey}
+            selectedCountry={selectedCountry}
+            setSelectedCountry={setSelectedCountry}
+          />
+        )}
       </ResponsiveCard>
     </Box>
   );

@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const Charts = ({ data }) => {
+const LineChartComponent = ({ data }) => {
   const formatYAxisTick = (tick) => {
     return tick.toLocaleString();
   };
@@ -29,4 +29,4 @@ const Charts = ({ data }) => {
   );
 };
 
-export default Charts;
+export default LineChartComponent;
