@@ -57,7 +57,8 @@ const CovidTracker = () => {
   const [error, setError] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [selectedDataKey, setSelectedDataKey] = useState("cases");
-  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("USA");
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState("30");
 
   const handleOnClickSearch = () => {
     if (!searchTerm) return;
@@ -102,7 +103,6 @@ const CovidTracker = () => {
               date,
               cases: cases[date],
               deaths: deaths[date],
-              recovered: recovered[date],
             });
           }
         }
@@ -113,7 +113,7 @@ const CovidTracker = () => {
   };
 
   useEffect(() => {
-    const apiUrl = `https://disease.sh/v3/covid-19/historical/${searchTerm}?lastdays=30`;
+    const apiUrl = `https://disease.sh/v3/covid-19/historical/${searchTerm}?lastdays=${selectedTimeFrame}`;
 
     axios
       .get(apiUrl)
@@ -127,7 +127,7 @@ const CovidTracker = () => {
         setHistoricalData(null);
         setError(true);
       });
-  }, [searchTerm]);
+  }, [searchTerm, selectedTimeFrame]);
 
   useEffect(() => {
     if (!searchTerm) {
@@ -184,7 +184,6 @@ const CovidTracker = () => {
     { label: "Deaths", value: filteredData.deaths },
     { label: "Recovered", value: filteredData.recovered },
   ];
-
   return (
     <Box
       sx={{
@@ -274,7 +273,7 @@ const CovidTracker = () => {
               flexDirection: "row",
               alignItems: "center",
               marginTop: "1rem",
-              width: "100%",
+              width: 700,
               justifyContent: "center",
             }}
           >
@@ -288,6 +287,8 @@ const CovidTracker = () => {
             setSelectedDataKey={setSelectedDataKey}
             selectedCountry={selectedCountry}
             setSelectedCountry={setSelectedCountry}
+            selectedTimeFrame={selectedTimeFrame}
+            setSelectedTimeFrame={setSelectedTimeFrame}
           />
         )}
       </ResponsiveCard>

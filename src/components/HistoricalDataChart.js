@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ResponsiveContainer,
 } from "recharts";
 import { Box, Typography, Select, MenuItem } from "@mui/material";
 
@@ -16,6 +17,8 @@ const HistoricalDataChart = ({
   setSelectedDataKey,
   selectedCountry,
   setSelectedCountry,
+  selectedTimeFrame,
+  setSelectedTimeFrame,
 }) => {
   const handleDataKeyChange = (event) => {
     setSelectedDataKey(event.target.value);
@@ -23,6 +26,10 @@ const HistoricalDataChart = ({
 
   const handleCountryChange = (event) => {
     setSelectedCountry(event.target.value);
+  };
+
+  const handleTimeFrameChange = (event) => {
+    setSelectedTimeFrame(event.target.value);
   };
 
   const countries = [...new Set(data.map((item) => item.country))];
@@ -37,50 +44,47 @@ const HistoricalDataChart = ({
           justifyContent: "center",
           marginTop: "1rem",
           flexDirection: "row",
+          width: "100%",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            marginRight: "1rem",
-            marginTop: "1rem",
-          }}
-        >
-          <Select value={selectedCountry} onChange={handleCountryChange}>
-            {countries.map((country) => (
-              <MenuItem key={country} value={country}>
-                {country}
-              </MenuItem>
-            ))}
-          </Select>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "1rem",
-          }}
-        >
-          <Select value={selectedDataKey} onChange={handleDataKeyChange}>
-            <MenuItem value="cases">Cases</MenuItem>
-            <MenuItem value="deaths">Deaths</MenuItem>
-            <MenuItem value="recovered">Recovered</MenuItem>
-          </Select>
-        </Box>
+        <Select value={selectedCountry} onChange={handleCountryChange}>
+          {countries.map((country) => (
+            <MenuItem key={country} value={country}>
+              {country}
+            </MenuItem>
+          ))}
+        </Select>
+
+        <Select value={selectedDataKey} onChange={handleDataKeyChange}>
+          <MenuItem value="cases">Cases</MenuItem>
+          <MenuItem value="deaths">Deaths</MenuItem>
+        </Select>
+
+        <Select value={selectedTimeFrame} onChange={handleTimeFrameChange}>
+          <MenuItem value="30">Last 30 days</MenuItem>
+          <MenuItem value="90">Last 90 days</MenuItem>
+          <MenuItem value="365">Last 365 days</MenuItem>
+        </Select>
       </Box>
 
       <Box
-        sx={{ marginTop: "1rem", display: "flex", justifyContent: "center" }}
+        sx={{
+          width: 700,
+          marginTop: "1rem",
+          display: "flex",
+          justifyContent: "center",
+        }}
       >
-        <LineChart width={600} height={300} data={filteredData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey={selectedDataKey} stroke="#8884d8" />
-        </LineChart>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={filteredData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis width={100} />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey={selectedDataKey} stroke="#8884d8" />
+          </LineChart>
+        </ResponsiveContainer>
       </Box>
     </Box>
   );
