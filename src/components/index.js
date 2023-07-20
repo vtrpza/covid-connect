@@ -5,18 +5,20 @@ import {
   Card,
   CircularProgress,
   Divider,
-  InputBase,
   Typography,
   Alert,
   Tabs,
   Tab,
   styled,
+  TextField,
 } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import { styled as muiStyled } from "@mui/system";
 import HistoricalDataChart from "./HistoricalDataChart";
 import LineChartComponent from "./LineChart";
+import useFilterData from "../utils/useFilterData";
+import useHistoricalData from "../utils/useHistoricalData";
 
 const ResponsiveCard = styled(Card)(({ theme }) => ({
   display: "flex",
@@ -50,43 +52,25 @@ const ResponsiveBox = muiStyled(Box)(({ theme }) => ({
 }));
 
 const CovidTracker = () => {
-  const [globalData, setGlobalData] = useState(null);
-  const [filteredData, setFilteredData] = useState(null);
-  const [historicalData, setHistoricalData] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [error, setError] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [selectedDataKey, setSelectedDataKey] = useState("cases");
   const [selectedCountry, setSelectedCountry] = useState("USA");
   const [selectedTimeFrame, setSelectedTimeFrame] = useState("30");
+  const [
+    searchTerm,
+    setSearchTerm,
+    handleSearch,
+    handleOnClickSearch,
+    filteredData,
+    errorInput,
+    error,
+  ] = useFilterData();
 
-  const handleOnClickSearch = () => {
-    if (!searchTerm) return;
-    axios
-      .get(`https://disease.sh/v3/covid-19/countries/${searchTerm}`)
-      .then((response) => {
-        setFilteredData(response.data);
-        setError(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching data: ", error);
-        setFilteredData(null);
-        setError(true);
-      });
-  };
+  const historicalData = useHistoricalData(searchTerm, selectedTimeFrame);
 
   useEffect(() => {
-    axios
-      .get("https://disease.sh/v3/covid-19/all")
-      .then((response) => {
-        setGlobalData(response.data);
-        setFilteredData(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data: ", error);
-        setError(true);
-      });
-  }, []);
+    setSearchTerm("");
+  }, [tabValue, setSearchTerm]);
 
   const formatHistoricalData = (data) => {
     let formattedHistoricalData = [];
@@ -108,35 +92,7 @@ const CovidTracker = () => {
         }
       }
     }
-
     return formattedHistoricalData;
-  };
-
-  useEffect(() => {
-    const apiUrl = `https://disease.sh/v3/covid-19/historical/${searchTerm}?lastdays=${selectedTimeFrame}`;
-
-    axios
-      .get(apiUrl)
-      .then((response) => {
-        const formattedData = formatHistoricalData(response.data);
-        setHistoricalData(formattedData);
-        setError(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching data: ", error);
-        setHistoricalData(null);
-        setError(true);
-      });
-  }, [searchTerm, selectedTimeFrame]);
-
-  useEffect(() => {
-    if (!searchTerm) {
-      setFilteredData(globalData);
-    }
-  }, [searchTerm, globalData]);
-
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
   };
 
   if (error) {
@@ -184,6 +140,7 @@ const CovidTracker = () => {
     { label: "Deaths", value: filteredData.deaths },
     { label: "Recovered", value: filteredData.recovered },
   ];
+
   return (
     <Box
       sx={{
@@ -213,10 +170,21 @@ const CovidTracker = () => {
 
         {tabValue === 0 && (
           <ResponsiveBox>
-            <InputBase
+            <TextField
+              error={errorInput}
               placeholder="Search by country"
               value={searchTerm}
               onChange={handleSearch}
+              InputProps={{
+                endAdornment: searchTerm && (
+                  <InputAdornment position="end">
+                    <SearchIcon
+                      sx={{ cursor: "pointer" }}
+                      onClick={handleOnClickSearch}
+                    />
+                  </InputAdornment>
+                ),
+              }}
               sx={{
                 backgroundColor: "#f5f5f5",
                 borderRadius: "4px",
@@ -233,17 +201,6 @@ const CovidTracker = () => {
                   marginLeft: "0.5rem",
                 },
               }}
-              endAdornment={
-                <InputAdornment
-                  onClick={handleOnClickSearch}
-                  sx={{
-                    cursor: "pointer",
-                  }}
-                  position="end"
-                >
-                  <SearchIcon />
-                </InputAdornment>
-              }
             />
           </ResponsiveBox>
         )}
@@ -282,7 +239,7 @@ const CovidTracker = () => {
         )}
         {tabValue === 1 && historicalData && (
           <HistoricalDataChart
-            data={historicalData}
+            data={formatHistoricalData(historicalData)}
             selectedDataKey={selectedDataKey}
             setSelectedDataKey={setSelectedDataKey}
             selectedCountry={selectedCountry}
